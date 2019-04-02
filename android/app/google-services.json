@@ -1,0 +1,35 @@
+{
+  "project_info": {
+    "project_number": "872918799807",
+    "firebase_url": "https://quickfinder-a3219.firebaseio.com",
+    "project_id": "quickfinder-a3219",
+    "storage_bucket": "quickfinder-a3219.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872918799807:android:f777b7b3321ec1bd",
+        "android_client_info": {
+          "package_name": "com.apps.magicleon.quickfinder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfI7GaZ_ETV37kf82R0E3liajPHHo6btE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "872918799807-vc4lq3g6vgo31efe001qkluom9vlt56j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

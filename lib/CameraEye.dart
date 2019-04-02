@@ -2,6 +2,8 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 class CameraEye extends StatefulWidget {
+  Function(CameraImage) frameCallback;
+
   @override
   _CameraEyeState createState() => _CameraEyeState();
 }
@@ -13,8 +15,17 @@ class _CameraEyeState extends State<CameraEye> {
   Future<void> _initCamera() async {
     _cameras = await availableCameras();
     _controller = CameraController(_cameras[0], ResolutionPreset.medium);
-
+    _controller.startImageStream(_listenImage);
     await _controller.initialize();
+  }
+
+  void _listenImage(CameraImage image){
+    widget.frameCallback(image);
+    _processImage(image);
+  }
+
+  Future<void> _processImage(CameraImage image) async {
+
   }
 
   @override
