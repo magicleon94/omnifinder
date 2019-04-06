@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:872918799807:android:f777b7b3321ec1bd",
+        "mobilesdk_app_id": "1:872918799807:android:a86bf94b7cf9f54e",
         "android_client_info": {
-          "package_name": "com.apps.magicleon.quickfinder"
+          "package_name": "magicleon.apps.omnifinder"
         }
       },
       "oauth_client": [],

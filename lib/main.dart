@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:omnifinder/HomeScreen.dart';
+import 'package:omnifinder/Screens/HomeScreen.dart';
 
 List<CameraDescription> cameras;
 
