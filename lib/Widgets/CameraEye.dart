@@ -16,7 +16,7 @@ class CameraEye extends StatefulWidget {
   _CameraEyeState createState() => _CameraEyeState();
 }
 
-class _CameraEyeState extends State<CameraEye> with CameraToFireVisionBridge {
+class _CameraEyeState extends State<CameraEye> with CameraToFireVisionBridge, WidgetsBindingObserver {
   CameraController _controller;
   List<CameraDescription> _cameras;
   ImageRotation _imageRotation;
@@ -24,7 +24,7 @@ class _CameraEyeState extends State<CameraEye> with CameraToFireVisionBridge {
   bool _isDetecting = false;
 
   StreamController<List<TextContainer>> _matchedResultsStream =
-      StreamController<List<TextContainer>>.broadcast();
+      StreamController<List<TextContainer>>();
 
   Future<void> _initCamera() async {
     _cameras = await availableCameras();
@@ -41,10 +41,15 @@ class _CameraEyeState extends State<CameraEye> with CameraToFireVisionBridge {
     super.initState();
   }
 
+  @override
+  void didChangeMetrics() {
+    _initCamera();
+    super.didChangeMetrics();
+  }
+
   void _listenImage(CameraImage image) async {
     final FirebaseVisionImage firebaseVisionImage =
         fromCameraImage(image, _imageRotation);
-
 
     if (!_isDetecting) {
       _isDetecting = true;
@@ -56,6 +61,8 @@ class _CameraEyeState extends State<CameraEye> with CameraToFireVisionBridge {
       _isDetecting = false;
     }
   }
+
+
 
   @override
   void dispose() {
@@ -82,10 +89,14 @@ class _CameraEyeState extends State<CameraEye> with CameraToFireVisionBridge {
                 stream: _matchedResultsStream.stream,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
+                    final Size imageSize = Size(
+                      _controller.value.previewSize.height,
+                      _controller.value.previewSize.width,
+                    );
+
                     return CustomPaint(
                       painter: ResultHighlightPainter(
-                        Size(_controller.value.previewSize.width,
-                            _controller.value.previewSize.height),
+                        imageSize,
                         snapshot.data,
                       ),
                     );
@@ -99,6 +110,7 @@ class _CameraEyeState extends State<CameraEye> with CameraToFireVisionBridge {
         } else {
           return Center(
             child: Column(
+              mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 CircularProgressIndicator(),

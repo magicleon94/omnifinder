@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:omnifinder/Screens/CameraScreen.dart';
-import 'package:omnifinder/Widgets/CameraEye.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -19,8 +17,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    SystemChrome.restoreSystemUIOverlays();
-    SystemChrome.setEnabledSystemUIOverlays([]);
     super.initState();
   }
 

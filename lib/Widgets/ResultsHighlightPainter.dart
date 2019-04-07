@@ -2,37 +2,46 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
 
 class ResultHighlightPainter extends CustomPainter {
-  ResultHighlightPainter(this.absoluteImageSize, this.matches);
+  ResultHighlightPainter(this.imageSize, this.matches);
 
-  final Size absoluteImageSize;
+  final Size imageSize;
   final List<TextContainer> matches;
 
-  Rect scaleRect(TextContainer container, double scaleX, double scaleY) {
+  Rect _scaleRect({
+    @required Rect rect,
+    @required Size imageSize,
+    @required Size widgetSize,
+  }) {
+    final double scaleX = widgetSize.width / imageSize.width;
+    final double scaleY = widgetSize.height / imageSize.height;
+
     return Rect.fromLTRB(
-      container.boundingBox.left.toDouble() * scaleX,
-      container.boundingBox.top.toDouble() * scaleY,
-      container.boundingBox.right.toDouble() * scaleX,
-      container.boundingBox.bottom.toDouble() * scaleY,
+      rect.left.toDouble() * scaleX,
+      rect.top.toDouble() * scaleY,
+      rect.right.toDouble() * scaleX,
+      rect.bottom.toDouble() * scaleY,
     );
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double scaleX = size.width / absoluteImageSize.width;
-    final double scaleY = size.height / absoluteImageSize.height;
-
     final Paint paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0;
+      ..strokeWidth = 2.0;
 
     paint.color = Colors.green;
-    matches.forEach(
-        (match) => canvas.drawRect(scaleRect(match, scaleX, scaleY), paint));
+    matches.forEach((TextContainer match) {
+      Rect scaledRect = _scaleRect(
+        rect: match.boundingBox,
+        imageSize: imageSize,
+        widgetSize: size,
+      );
+      canvas.drawRect(scaledRect, paint);
+    });
   }
 
   @override
   bool shouldRepaint(ResultHighlightPainter oldDelegate) {
-    return oldDelegate.absoluteImageSize != absoluteImageSize ||
-        oldDelegate.matches != matches;
+    return oldDelegate.imageSize != imageSize || oldDelegate.matches != matches;
   }
 }
