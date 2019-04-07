@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
+import 'package:flutter/services.dart';
 import 'package:omnifinder/Screens/HomeScreen.dart';
 
-List<CameraDescription> cameras;
-
 Future<void> main() async {
-  cameras = await availableCameras();
+  await SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   runApp(MyApp());
 }
 
@@ -23,4 +22,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

@@ -16,28 +16,42 @@ class CameraEye extends StatefulWidget {
   _CameraEyeState createState() => _CameraEyeState();
 }
 
-class _CameraEyeState extends State<CameraEye> with CameraToFireVisionBridge, WidgetsBindingObserver {
+class _CameraEyeState extends State<CameraEye>
+    with CameraToFireVisionBridge, WidgetsBindingObserver {
   CameraController _controller;
   List<CameraDescription> _cameras;
+  List<ResolutionPreset> _resolutionPresets = [
+    ResolutionPreset.low,
+    ResolutionPreset.medium,
+    ResolutionPreset.high
+  ];
+  int _currentResolutionIndex = 2;
+
   ImageRotation _imageRotation;
   TextDetector _detector;
   bool _isDetecting = false;
+  bool _cameraReady = false;
 
-  StreamController<List<TextContainer>> _matchedResultsStream =
-      StreamController<List<TextContainer>>();
+  List<TextContainer> _searchResults = [];
 
   Future<void> _initCamera() async {
     _cameras = await availableCameras();
     _imageRotation = rotationIntToImageRotation(_cameras[0].sensorOrientation);
-    _controller = CameraController(_cameras[0], ResolutionPreset.medium);
+    _controller = CameraController(
+        _cameras[0], _resolutionPresets[_currentResolutionIndex]);
 
     await _controller.initialize();
     _controller.startImageStream(_listenImage);
+
+    setState(() {
+      _cameraReady = _controller.value.isInitialized;
+    });
   }
 
   @override
   void initState() {
     _detector = TextDetector(keywords: widget.keywords);
+    _initCamera();
     super.initState();
   }
 
@@ -45,6 +59,15 @@ class _CameraEyeState extends State<CameraEye> with CameraToFireVisionBridge, Wi
   void didChangeMetrics() {
     _initCamera();
     super.didChangeMetrics();
+  }
+
+  @override
+  void didHaveMemoryPressure() {
+    if (_currentResolutionIndex > 0) {
+      _currentResolutionIndex--;
+      _initCamera();
+    }
+    super.didHaveMemoryPressure();
   }
 
   void _listenImage(CameraImage image) async {
@@ -56,70 +79,48 @@ class _CameraEyeState extends State<CameraEye> with CameraToFireVisionBridge, Wi
       List<TextContainer> matchesFound =
           await _detector.findWords(firebaseVisionImage);
 
-      _matchedResultsStream.sink.add(matchesFound);
+      setState(() {
+        _searchResults = matchesFound;
+      });
 
       _isDetecting = false;
     }
   }
 
-
-
   @override
   void dispose() {
     _controller?.dispose();
-    _matchedResultsStream?.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _initCamera(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (!_controller.value.isInitialized) {
-            return Container();
-          }
-
-          return Stack(
-            fit: StackFit.expand,
-            children: <Widget>[
-              CameraPreview(_controller),
-              StreamBuilder(
-                stream: _matchedResultsStream.stream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    final Size imageSize = Size(
-                      _controller.value.previewSize.height,
-                      _controller.value.previewSize.width,
-                    );
-
-                    return CustomPaint(
-                      painter: ResultHighlightPainter(
-                        imageSize,
-                        snapshot.data,
-                      ),
-                    );
-                  } else {
-                    return Container();
-                  }
-                },
-              ),
-            ],
-          );
-        } else {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                CircularProgressIndicator(),
-                Text("Initialising eye..")
-              ],
+    if (_cameraReady) {
+      Size imageSize = Size(
+        _controller.value.previewSize.height,
+        _controller.value.previewSize.width,
+      );
+      
+      return Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          CameraPreview(_controller),
+          CustomPaint(
+            painter: ResultHighlightPainter(
+              imageSize,
+              _searchResults,
             ),
-          );
-        }
-      },
-    );
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          CircularProgressIndicator(),
+          Text("Initialising eye..")
+        ],
+      );
+    }
   }
 }
