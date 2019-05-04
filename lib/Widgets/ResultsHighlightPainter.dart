@@ -16,10 +16,10 @@ class ResultHighlightPainter extends CustomPainter {
     final double scaleY = widgetSize.height / imageSize.height;
 
     return Rect.fromLTRB(
-      rect.left.toDouble() * scaleX,
-      rect.top.toDouble() * scaleY,
-      rect.right.toDouble() * scaleX,
-      rect.bottom.toDouble() * scaleY,
+      rect.left.toDouble() * scaleX * 1.5, //bigger!
+      rect.top.toDouble() * scaleY * 1.5, //bigger!
+      rect.right.toDouble() * scaleX * 1.5, //bigger!
+      rect.bottom.toDouble() * scaleY * 1.5, //bigger!
     );
   }
 
@@ -27,9 +27,9 @@ class ResultHighlightPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final Paint paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
+      ..strokeWidth = 3.0;
 
-    paint.color = Colors.green;
+    paint.color = Colors.red;
     matches.forEach((TextContainer match) {
       Rect scaledRect = _scaleRect(
         rect: match.boundingBox,

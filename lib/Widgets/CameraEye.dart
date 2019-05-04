@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:omnifinder/Logic/TextDetector.dart';
 import 'package:omnifinder/Logic/CameraToFireVisionBridge.dart';
 import 'package:omnifinder/Widgets/ResultsHighlightPainter.dart';
+import 'package:omnifinder/Widgets/torch_toggle.dart';
 
 class CameraEye extends StatefulWidget {
   final List<String> keywords;
@@ -100,7 +101,7 @@ class _CameraEyeState extends State<CameraEye>
         _controller.value.previewSize.height,
         _controller.value.previewSize.width,
       );
-      
+
       return Stack(
         fit: StackFit.expand,
         children: <Widget>[
@@ -111,6 +112,17 @@ class _CameraEyeState extends State<CameraEye>
               _searchResults,
             ),
           ),
+          Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              automaticallyImplyLeading: true,
+              actions: <Widget>[
+                TorchToggle(),
+              ],
+            ),
+backgroundColor: Colors.transparent,
+          )
         ],
       );
     } else {
