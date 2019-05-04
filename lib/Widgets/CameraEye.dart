@@ -33,7 +33,8 @@ class _CameraEyeState extends State<CameraEye>
   bool _isDetecting = false;
   bool _cameraReady = false;
 
-  List<TextContainer> _searchResults = [];
+  StreamController<List<TextContainer>> _resultsStream =
+      StreamController<List<TextContainer>>();
 
   Future<void> _initCamera() async {
     _cameras = await availableCameras();
@@ -80,9 +81,7 @@ class _CameraEyeState extends State<CameraEye>
       List<TextContainer> matchesFound =
           await _detector.findWords(firebaseVisionImage);
 
-      setState(() {
-        _searchResults = matchesFound;
-      });
+      _resultsStream.sink.add(matchesFound);
 
       _isDetecting = false;
     }
@@ -91,6 +90,7 @@ class _CameraEyeState extends State<CameraEye>
   @override
   void dispose() {
     _controller?.dispose();
+    _resultsStream?.close();
     super.dispose();
   }
 
@@ -106,11 +106,20 @@ class _CameraEyeState extends State<CameraEye>
         fit: StackFit.expand,
         children: <Widget>[
           CameraPreview(_controller),
-          CustomPaint(
-            painter: ResultHighlightPainter(
-              imageSize,
-              _searchResults,
-            ),
+          StreamBuilder(
+            stream: _resultsStream.stream,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                List<TextContainer> searchResults = snapshot.data;
+                return CustomPaint(
+                  painter: ResultHighlightPainter(
+                    imageSize,
+                    searchResults,
+                  ),
+                );
+              }
+              return Container();
+            },
           ),
           Scaffold(
             appBar: AppBar(
@@ -121,7 +130,7 @@ class _CameraEyeState extends State<CameraEye>
                 TorchToggle(),
               ],
             ),
-backgroundColor: Colors.transparent,
+            backgroundColor: Colors.transparent,
           )
         ],
       );

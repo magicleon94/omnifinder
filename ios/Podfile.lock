@@ -95,12 +95,15 @@ PODS:
   - nanopb/decode (0.3.901)
   - nanopb/encode (0.3.901)
   - Protobuf (3.7.0)
+  - torch (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - camera (from `.symlinks/plugins/camera/ios`)
   - Firebase/MLVisionTextModel
   - firebase_ml_vision (from `.symlinks/plugins/firebase_ml_vision/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
+  - torch (from `.symlinks/plugins/torch/ios`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -127,6 +130,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_ml_vision/ios"
   Flutter:
     :path: ".symlinks/flutter/ios"
+  torch:
+    :path: ".symlinks/plugins/torch/ios"
 
 SPEC CHECKSUMS:
   camera: be01db3b2193839f9af56a9db99b7fea444d35f3
@@ -147,6 +152,7 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 32aeca0aa144acea523e1c8e053089dec2cb98ca
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
   Protobuf: 7a877b7f3e5964e3fce995e2eb323dbc6831bb5a
+  torch: 6c46d93b89d6a8b2ead648eb8b48a34a12849463
 
 PODFILE CHECKSUM: 3ec533333cd2e0167c1770ef4b16cb0371c2a88a
 

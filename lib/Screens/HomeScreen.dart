@@ -51,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     alignment: Alignment.centerLeft,
                     child: TextFormField(
+                      controller: _textController,
                       decoration: InputDecoration(hintText: "Keyword"),
                       textInputAction: TextInputAction.done,
                       onFieldSubmitted: _submitForm

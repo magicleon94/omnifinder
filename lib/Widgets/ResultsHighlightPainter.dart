@@ -16,10 +16,10 @@ class ResultHighlightPainter extends CustomPainter {
     final double scaleY = widgetSize.height / imageSize.height;
 
     return Rect.fromLTRB(
-      rect.left.toDouble() * scaleX * 1.5, //bigger!
-      rect.top.toDouble() * scaleY * 1.5, //bigger!
-      rect.right.toDouble() * scaleX * 1.5, //bigger!
-      rect.bottom.toDouble() * scaleY * 1.5, //bigger!
+      rect.left.toDouble() * scaleX, //bigger!
+      rect.top.toDouble() * scaleY, //bigger!
+      rect.right.toDouble() * scaleX, //bigger!
+      rect.bottom.toDouble() * scaleY, //bigger!
     );
   }
 
