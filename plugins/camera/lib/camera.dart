@@ -502,7 +502,11 @@ class CameraController extends ValueNotifier<CameraValue> {
   /// Check wether the flash is supported or not
   ///
   Future<bool> isFlashSupported() async {
-    return _channel.invokeMethod<bool>("isFlashSupported");
+    try {
+      return _channel.invokeMethod<bool>("isFlashSupported");
+    } on PlatformException {
+      return false;
+    }
   }
 
   /// Toggles the torch
