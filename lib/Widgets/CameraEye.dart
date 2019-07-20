@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
-import 'package:omnifinder/Logic/TextDetector.dart';
 import 'package:omnifinder/Logic/CameraToFireVisionBridge.dart';
+import 'package:omnifinder/Logic/TextDetector.dart';
 import 'package:omnifinder/Widgets/ResultsHighlightPainter.dart';
 import 'package:omnifinder/Widgets/torch_toggle.dart';
 
@@ -81,7 +81,9 @@ class _CameraEyeState extends State<CameraEye>
       List<TextContainer> matchesFound =
           await _detector.findWords(firebaseVisionImage);
 
-      _resultsStream.sink.add(matchesFound);
+      if (!_resultsStream.isClosed) {
+        _resultsStream.sink.add(matchesFound);
+      }
 
       _isDetecting = false;
     }
@@ -89,8 +91,8 @@ class _CameraEyeState extends State<CameraEye>
 
   @override
   void dispose() {
-    _controller?.dispose();
     _resultsStream?.close();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -127,7 +129,9 @@ class _CameraEyeState extends State<CameraEye>
               elevation: 0,
               automaticallyImplyLeading: true,
               actions: <Widget>[
-                TorchToggle(),
+                TorchToggle(
+                  cameraController: _controller,
+                ),
               ],
             ),
             backgroundColor: Colors.transparent,

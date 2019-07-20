@@ -1,50 +1,43 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:torch/torch.dart';
 
-class TorchToggle extends StatefulWidget {
-  @override
-  _TorchToggleState createState() => _TorchToggleState();
-}
+class TorchToggle extends StatelessWidget {
+  final CameraController cameraController;
 
-class _TorchToggleState extends State<TorchToggle> {
-  bool _isTorchOn = false;
-  bool _hasTorch = false;
+  final ValueNotifier<bool> _torchNotifier = ValueNotifier<bool>(false);
 
-  void _toggleTorch() {
-    if (_isTorchOn) {
-      Torch.turnOff();
-    } else {
-      Torch.turnOn();
-    }
+  TorchToggle({Key key, this.cameraController}) : super(key: key);
 
-    setState(() {
-      _isTorchOn = !_isTorchOn;
-    });
-  }
-
-  void _init() async {
-    _hasTorch = await Torch.hasTorch;
-    setState(() {});
-  }
-
-  @override
-  void initState() {
-    _init();
-    super.initState();
+  void _toggleTorch() async {
+    await cameraController
+        .setFlashMode(_torchNotifier.value ? FlashMode.off : FlashMode.torch);
+    _torchNotifier.value = cameraController.flashMode == FlashMode.torch;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_hasTorch) {
-      return IconButton(
-        icon: Icon(_isTorchOn ? Icons.flash_off : Icons.flash_on),
-        onPressed: _toggleTorch,
-      );
-    } else {
-      return Container(
-        width: 0,
-        height: 0,
-      );
-    }
+    return FutureBuilder(
+      future: cameraController.isFlashSupported(),
+      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+        if (snapshot.hasData) {
+          final bool hasTorch = snapshot.data;
+
+          if (hasTorch) {
+            return ValueListenableBuilder(
+                valueListenable: _torchNotifier,
+                builder: (BuildContext context, bool isTorchOn, _) {
+                  return IconButton(
+                    icon: Icon(isTorchOn ? Icons.flash_off : Icons.flash_on),
+                    onPressed: _toggleTorch,
+                  );
+                });
+          } else {
+            return SizedBox.shrink();
+          }
+        } else {
+          return SizedBox.shrink();
+        }
+      },
+    );
   }
 }
