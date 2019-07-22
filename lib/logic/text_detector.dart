@@ -18,7 +18,7 @@ class TextDetector with CameraToFireVisionBridge {
 
     final RegExp regExp = RegExp(pattern, caseSensitive: false);
 
-    List<TextContainer> matches = List<TextContainer>();
+    List<TextContainer> matches = const [];
 
     for (TextBlock block in visionText.blocks) {
       for (TextLine line in block.lines) {
