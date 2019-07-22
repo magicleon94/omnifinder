@@ -95,15 +95,12 @@ PODS:
   - nanopb/decode (0.3.901)
   - nanopb/encode (0.3.901)
   - Protobuf (3.7.0)
-  - torch (0.0.1):
-    - Flutter
 
 DEPENDENCIES:
   - camera (from `.symlinks/plugins/camera/ios`)
   - Firebase/MLVisionTextModel
   - firebase_ml_vision (from `.symlinks/plugins/firebase_ml_vision/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
-  - torch (from `.symlinks/plugins/torch/ios`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -130,20 +127,18 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_ml_vision/ios"
   Flutter:
     :path: ".symlinks/flutter/ios"
-  torch:
-    :path: ".symlinks/plugins/torch/ios"
 
 SPEC CHECKSUMS:
-  camera: be01db3b2193839f9af56a9db99b7fea444d35f3
+  camera: d56ad165545ae5a0ffb892376033760a969c68c8
   Firebase: b48f9e653da971ecce5b8c749684bc8bb2d26bd3
-  firebase_ml_vision: 44419b558d8edcfb2be8606cc76cdd5014bd2017
+  firebase_ml_vision: 2c3c49ab669d17013ddbe744556462661383181d
   FirebaseAnalytics: 63202d2665de4e6adcbdce189135255d8b5962ba
   FirebaseCore: d16552f06821489ce1affe2e5e3e5593402ddfe3
   FirebaseInstanceID: e2fa4cb35ef5558c200f7f0ad8a53e212215f93e
   FirebaseMLCommon: 5fb0152dc0e4de69f86ec37e813fb2555566ebbd
   FirebaseMLVision: 7e9a7f2f81117be2796196f3901c36ad893366b1
   FirebaseMLVisionTextModel: 97af06fa88b45cabbe39f04d2c825b9d7001cd66
-  Flutter: 9d0fac939486c9aba2809b7982dfdbb47a7b0296
+  Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
   GoogleAPIClientForREST: 5447a194eae517986cafe6421a5330b80b820591
   GoogleAppMeasurement: 5029d78f2b438bd30ffb44e6c558b57c21622727
   GoogleMobileVision: a1f93108b3527d67339e2de80e1db76645f9e8b9
@@ -152,8 +147,7 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 32aeca0aa144acea523e1c8e053089dec2cb98ca
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
   Protobuf: 7a877b7f3e5964e3fce995e2eb323dbc6831bb5a
-  torch: 6c46d93b89d6a8b2ead648eb8b48a34a12849463
 
 PODFILE CHECKSUM: 3ec533333cd2e0167c1770ef4b16cb0371c2a88a
 
-COCOAPODS: 1.5.2
+COCOAPODS: 1.7.0

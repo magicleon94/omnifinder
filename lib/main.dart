@@ -1,7 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:omnifinder/Screens/HomeScreen.dart';
+import 'package:omnifinder/Screens/home_screen.dart';
 
 Future<void> main() async {
   await SystemChrome.setPreferredOrientations(
