@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:omnifinder/Widgets/camera_eye.dart';
+import 'package:omnifinder/widgets/camera_eye.dart';
 
 class CameraScreen extends StatefulWidget {
   final List<String> keywords;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:omnifinder/Screens/camera_screen.dart';
+import 'package:omnifinder/screens/camera_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override

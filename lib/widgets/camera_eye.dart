@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
-import 'package:omnifinder/Logic/camera_to_firevision_bridge.dart';
-import 'package:omnifinder/Logic/text_detector.dart';
-import 'package:omnifinder/Widgets/results_highlight_painter.dart';
+import 'package:omnifinder/logic/camera_to_firevision_bridge.dart';
+import 'package:omnifinder/logic/text_detector.dart';
+import 'package:omnifinder/widgets/results_highlight_painter.dart';
 
 class CameraEye extends StatefulWidget {
   final List<String> keywords;
