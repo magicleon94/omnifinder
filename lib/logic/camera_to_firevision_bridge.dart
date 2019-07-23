@@ -5,16 +5,16 @@ import 'package:camera/camera.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/foundation.dart';
 
-mixin CameraToFireVisionBridge {
+class CameraToFireVisionBridge {
   //Methods by https://github.com/bparrishMines/mlkit_demo/blob/master/lib/utils.dart
 
-  Uint8List _concatenatePlanes(List<Plane> planes) {
+  static Uint8List _concatenatePlanes(List<Plane> planes) {
     final WriteBuffer allBytes = WriteBuffer();
     planes.forEach((Plane plane) => allBytes.putUint8List(plane.bytes));
     return allBytes.done().buffer.asUint8List();
   }
 
-  FirebaseVisionImageMetadata _buildMetaData(
+  static FirebaseVisionImageMetadata _buildMetaData(
       CameraImage image, ImageRotation rotation) {
     return FirebaseVisionImageMetadata(
       rawFormat: image.format.raw,
@@ -32,7 +32,7 @@ mixin CameraToFireVisionBridge {
     );
   }
 
-  ImageRotation rotationIntToImageRotation(int rotation) {
+  static ImageRotation rotationIntToImageRotation(int rotation) {
     switch (rotation) {
       case 0:
         return ImageRotation.rotation0;
@@ -48,13 +48,11 @@ mixin CameraToFireVisionBridge {
 
   // end
 
-  FirebaseVisionImage fromCameraImage(
+  static FirebaseVisionImage fromCameraImage(
       CameraImage image, ImageRotation rotation) {
     return FirebaseVisionImage.fromBytes(
       _concatenatePlanes(image.planes),
       _buildMetaData(image, rotation),
     );
   }
-
-
 }

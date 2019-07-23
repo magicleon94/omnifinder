@@ -9,6 +9,24 @@ import 'package:omnifinder/logic/text_detector.dart';
 import 'package:omnifinder/widgets/results_highlight_painter.dart';
 import 'package:synchronized/synchronized.dart';
 
+class IsolatePayload {
+  final Function(List<TextContainer>) addResult;
+  final SendPort sendPort;
+  final CameraImage image;
+  final ImageRotation imageRotation;
+  final TextDetector detector;
+  final bool Function() streamIsClosed;
+
+  IsolatePayload({
+    this.addResult,
+    this.sendPort,
+    this.image,
+    this.imageRotation,
+    this.detector,
+    this.streamIsClosed,
+  });
+}
+
 class CameraEye extends StatefulWidget {
   final List<String> keywords;
 
@@ -18,8 +36,7 @@ class CameraEye extends StatefulWidget {
   _CameraEyeState createState() => _CameraEyeState();
 }
 
-class _CameraEyeState extends State<CameraEye>
-    with CameraToFireVisionBridge, WidgetsBindingObserver {
+class _CameraEyeState extends State<CameraEye> with WidgetsBindingObserver {
   CameraController _controller;
   List<CameraDescription> _cameras;
   List<ResolutionPreset> _resolutionPresets = [
@@ -34,14 +51,23 @@ class _CameraEyeState extends State<CameraEye>
   bool _isDetecting = false;
   bool _cameraReady = false;
 
+  ReceivePort _receivePort;
+
   Lock _lock = Lock();
 
   StreamController<List<TextContainer>> _resultsStream =
       StreamController<List<TextContainer>>.broadcast();
 
+  void _receivedPortListener(dynamic value) {
+    _lock.synchronized(() {
+      _isDetecting = value as bool;
+    });
+  }
+
   Future<void> _initCamera() async {
     _cameras = await availableCameras();
-    _imageRotation = rotationIntToImageRotation(_cameras[0].sensorOrientation);
+    _imageRotation = CameraToFireVisionBridge.rotationIntToImageRotation(
+        _cameras[0].sensorOrientation);
     _controller = CameraController(
         _cameras[0], _resolutionPresets[_currentResolutionIndex]);
 
@@ -56,6 +82,8 @@ class _CameraEyeState extends State<CameraEye>
   @override
   void initState() {
     _detector = TextDetector(keywords: widget.keywords);
+    _receivePort = ReceivePort();
+    _receivePort.listen(_receivedPortListener);
     _initCamera();
     super.initState();
   }
@@ -75,26 +103,34 @@ class _CameraEyeState extends State<CameraEye>
     if (shallDie) {
       return;
     } else {
-      Isolate.spawn<CameraImage>(_processImage, image);
+      IsolatePayload payload = IsolatePayload(
+        sendPort: _receivePort.sendPort,
+        addResult: _resultsStream.add,
+        image: image,
+        detector: _detector,
+        imageRotation: _imageRotation,
+        streamIsClosed: () => _resultsStream.isClosed,
+      );
+      Isolate.spawn<IsolatePayload>(
+        _process,
+        payload,
+      );
       return;
     }
   }
 
-  void _processImage(CameraImage image) async {
+  static _process(IsolatePayload payload) async {
     final FirebaseVisionImage firebaseVisionImage =
-        fromCameraImage(image, _imageRotation);
+        CameraToFireVisionBridge.fromCameraImage(
+            payload.image, payload.imageRotation);
     List<TextContainer> matchesFound =
-        await _detector.findWords(firebaseVisionImage);
+        await payload.detector.findWords(firebaseVisionImage);
 
-    if (!_resultsStream.isClosed && matchesFound.length > 0) {
-      _resultsStream.sink.add(matchesFound);
+    if (!payload.streamIsClosed() && matchesFound.length > 0) {
+      payload.addResult(matchesFound);
     }
 
-    _lock.synchronized(
-      () {
-        _isDetecting = false;
-      },
-    );
+    payload.sendPort.send(false);
   }
 
   @override
