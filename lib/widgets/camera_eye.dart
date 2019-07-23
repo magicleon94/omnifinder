@@ -4,9 +4,9 @@ import 'dart:isolate';
 import 'package:camera/camera.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
-import 'package:omnifinder/Logic/camera_to_firevision_bridge.dart';
-import 'package:omnifinder/Logic/text_detector.dart';
-import 'package:omnifinder/Widgets/results_highlight_painter.dart';
+import 'package:omnifinder/logic/camera_to_firevision_bridge.dart';
+import 'package:omnifinder/logic/text_detector.dart';
+import 'package:omnifinder/widgets/results_highlight_painter.dart';
 import 'package:synchronized/synchronized.dart';
 
 class CameraEye extends StatefulWidget {
@@ -21,29 +21,42 @@ class CameraEye extends StatefulWidget {
 class _CameraEyeState extends State<CameraEye>
     with CameraToFireVisionBridge, WidgetsBindingObserver {
   CameraController _controller;
+  List<CameraDescription> _cameras;
+  List<ResolutionPreset> _resolutionPresets = [
+    ResolutionPreset.low,
+    ResolutionPreset.medium,
+    ResolutionPreset.high
+  ];
+  int _currentResolutionIndex = 2;
+
   ImageRotation _imageRotation;
   TextDetector _detector;
   bool _isDetecting = false;
+  bool _cameraReady = false;
 
   Lock _lock = Lock();
 
   StreamController<List<TextContainer>> _resultsStream =
       StreamController<List<TextContainer>>.broadcast();
 
-  Future<bool> _initCamera() async {
-    final List<CameraDescription> _cameras = await availableCameras();
+  Future<void> _initCamera() async {
+    _cameras = await availableCameras();
     _imageRotation = rotationIntToImageRotation(_cameras[0].sensorOrientation);
-    _controller = CameraController(_cameras[0], ResolutionPreset.high);
+    _controller = CameraController(
+        _cameras[0], _resolutionPresets[_currentResolutionIndex]);
 
     await _controller.initialize();
     _controller.startImageStream(_listenImage);
 
-    return _controller.value.isInitialized;
+    setState(() {
+      _cameraReady = _controller.value.isInitialized;
+    });
   }
 
   @override
   void initState() {
     _detector = TextDetector(keywords: widget.keywords);
+    _initCamera();
     super.initState();
   }
 
@@ -63,6 +76,7 @@ class _CameraEyeState extends State<CameraEye>
       return;
     } else {
       Isolate.spawn<CameraImage>(_processImage, image);
+      return;
     }
   }
 
@@ -84,6 +98,21 @@ class _CameraEyeState extends State<CameraEye>
   }
 
   @override
+  void didChangeMetrics() {
+    _initCamera();
+    super.didChangeMetrics();
+  }
+
+  @override
+  void didHaveMemoryPressure() {
+    if (_currentResolutionIndex > 0) {
+      _currentResolutionIndex--;
+      _initCamera();
+    }
+    super.didHaveMemoryPressure();
+  }
+
+  @override
   void dispose() {
     _resultsStream?.close();
     _controller?.dispose();
@@ -92,46 +121,41 @@ class _CameraEyeState extends State<CameraEye>
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _initCamera(),
-      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              CircularProgressIndicator(),
-              Text("Initialising eye..")
-            ],
-          );
-        } else {
-          Size imageSize = Size(
-            _controller.value.previewSize.height,
-            _controller.value.previewSize.width,
-          );
+    if (_cameraReady) {
+      Size imageSize = Size(
+        _controller.value.previewSize.height,
+        _controller.value.previewSize.width,
+      );
 
-          return Stack(
-            fit: StackFit.expand,
-            children: <Widget>[
-              CameraPreview(_controller),
-              StreamBuilder(
-                stream: _resultsStream.stream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    List<TextContainer> searchResults = snapshot.data;
-                    return CustomPaint(
-                      painter: ResultHighlightPainter(
-                        imageSize,
-                        searchResults,
-                      ),
-                    );
-                  }
-                  return Container();
-                },
-              ),
-            ],
-          );
-        }
-      },
-    );
+      return Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          CameraPreview(_controller),
+          StreamBuilder(
+            stream: _resultsStream.stream,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                List<TextContainer> searchResults = snapshot.data;
+                return CustomPaint(
+                  painter: ResultHighlightPainter(
+                    imageSize,
+                    searchResults,
+                  ),
+                );
+              }
+              return Container();
+            },
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          CircularProgressIndicator(),
+          Text("Initialising eye..")
+        ],
+      );
+    }
   }
 }

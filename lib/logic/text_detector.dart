@@ -1,5 +1,5 @@
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
-import 'package:omnifinder/Logic/camera_to_firevision_bridge.dart';
+import 'package:omnifinder/logic/camera_to_firevision_bridge.dart';
 
 class TextDetector with CameraToFireVisionBridge {
   final List<String> keywords;
