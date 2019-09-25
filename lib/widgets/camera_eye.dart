@@ -5,7 +5,7 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
 import 'package:omnifinder/logic/camera_to_firevision_bridge.dart';
 import 'package:omnifinder/logic/text_detector.dart';
-import 'package:omnifinder/widgets/results_highlight_painter.dart';
+import 'package:omnifinder/widgets/highlights_clipper.dart';
 
 class CameraEye extends StatefulWidget {
   final List<String> keywords;
@@ -112,10 +112,15 @@ class _CameraEyeState extends State<CameraEye>
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 List<TextContainer> searchResults = snapshot.data;
-                return CustomPaint(
-                  painter: ResultHighlightPainter(
-                    imageSize,
-                    searchResults,
+                return ClipPath(
+                  clipper: HighlightsClipper(
+                    matches: searchResults,
+                    imageSize: imageSize,
+                  ),
+                  child: SizedBox.expand(
+                    child: Container(
+                      color: Colors.black.withOpacity(0.6),
+                    ),
                   ),
                 );
               }
