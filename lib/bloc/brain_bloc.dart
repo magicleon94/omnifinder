@@ -35,5 +35,6 @@ class BrainBloc extends BlocBase {
 
   BrainBloc(KeywordsContainer keywordsContainer) {
     _textDetector = TextDetector(keywords: keywordsContainer.keywords);
+    _cameraImageStreamController.stream.listen(_processImage);
   }
 }
