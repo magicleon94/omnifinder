@@ -42,9 +42,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _addKeyword() {
     String value = "dummy";
-    keywords.insert(0, value);
+    keywords.add(value);
     _animatedListKey.currentState.insertItem(
-      0,
+      keywords.length - 1,
     );
   }
 
@@ -52,22 +52,14 @@ class _HomeScreenState extends State<HomeScreen> {
     _animatedListKey.currentState.removeItem(
       index,
       (context, animation) {
-        Animation<double> fadeAnimation =
-            Tween<double>(begin: 1, end: 0).animate(animation);
-        return FadeTransition(
-          opacity: fadeAnimation,
-          child: KeywordTile(
-            keyword: keywords[index],
-          ),
-        );
+        return SizedBox.shrink();
       },
     );
-    keywords.removeAt(index);
   }
 
   Widget _buildItem(BuildContext context, int index, Animation animation) {
     Animation<Offset> slideUpAnimation = Tween<Offset>(
-      begin: Offset.infinite,
+      begin: Offset(1, 0),
       end: Offset.zero,
     ).animate(animation);
     return SlideTransition(

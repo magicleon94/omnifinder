@@ -12,12 +12,9 @@ class KeywordTile extends StatefulWidget {
 class _KeywordTileState extends State<KeywordTile> {
   @override
   Widget build(BuildContext context) {
-    return FractionallySizedBox(
-      widthFactor: 100,
-      child: Container(
-        height: 84,
-        child: Text(widget.keyword),
-      ),
+    return Container(
+      height: 84,
+      child: Card(child: Center(child: Text(widget.keyword))),
     );
   }
 }
