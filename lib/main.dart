@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:omnifinder/screens/home_screen.dart';
+import 'package:omnifinder/routing/routes.dart';
+import 'package:omnifinder/screens/splash_screen.dart';
 
 Future<void> main() async {
   await SystemChrome.setPreferredOrientations(
@@ -20,7 +21,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: HomeScreen(),
+      home: SplashScreen(),
+      onGenerateRoute: Routes.onGenerateRoute,
     );
   }
 }

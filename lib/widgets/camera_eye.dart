@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
+import 'package:omnifinder/bloc/brain_bloc.dart';
 import 'package:omnifinder/logic/camera_to_firevision_bridge.dart';
-import 'package:omnifinder/logic/text_detector.dart';
+import 'package:omnifinder/providers/bloc_provider.dart';
 import 'package:omnifinder/widgets/highlights_clipper.dart';
 
 class CameraEye extends StatefulWidget {
@@ -28,12 +29,11 @@ class _CameraEyeState extends State<CameraEye>
   int _currentResolutionIndex = 2;
 
   ImageRotation _imageRotation;
-  TextDetector _detector;
+
   bool _isDetecting = false;
   bool _cameraReady = false;
 
-  StreamController<List<TextContainer>> _resultsStream =
-      StreamController<List<TextContainer>>();
+  StreamSubscription _subscription;
 
   Future<void> _initCamera() async {
     _cameras = await availableCameras();
@@ -51,9 +51,20 @@ class _CameraEyeState extends State<CameraEye>
 
   @override
   void initState() {
-    _detector = TextDetector(keywords: widget.keywords);
     _initCamera();
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    _subscription ??= BlocProvider.of<BrainBloc>(context)
+        .detectionResultStream
+        .listen(_onDetectionResult);
+    super.didChangeDependencies();
+  }
+
+  void _onDetectionResult(void _) {
+    _isDetecting = false;
   }
 
   @override
@@ -72,25 +83,16 @@ class _CameraEyeState extends State<CameraEye>
   }
 
   void _listenImage(CameraImage image) async {
-    final FirebaseVisionImage firebaseVisionImage =
-        fromCameraImage(image, _imageRotation);
-
     if (!_isDetecting) {
       _isDetecting = true;
-      List<TextContainer> matchesFound =
-          await _detector.findWords(firebaseVisionImage);
-
-      if (!_resultsStream.isClosed) {
-        _resultsStream.sink.add(matchesFound);
-      }
-
-      _isDetecting = false;
+      BlocProvider.of<BrainBloc>(context)
+          .processImage(fromCameraImage(image, _imageRotation));
     }
   }
 
   @override
   void dispose() {
-    _resultsStream?.close();
+    _subscription?.cancel();
     _controller?.dispose();
     super.dispose();
   }
@@ -108,7 +110,7 @@ class _CameraEyeState extends State<CameraEye>
         children: <Widget>[
           CameraPreview(_controller),
           StreamBuilder(
-            stream: _resultsStream.stream,
+            stream: BlocProvider.of<BrainBloc>(context).detectionResultStream,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 List<TextContainer> searchResults = snapshot.data;

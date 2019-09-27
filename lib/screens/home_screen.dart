@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:omnifinder/screens/camera_screen.dart';
+import 'package:omnifinder/models/keywords_container.dart';
+import 'package:omnifinder/routing/route_arguments/camera_screen_route_arguments.dart';
+import 'package:omnifinder/routing/route_parameters.dart';
+import 'package:omnifinder/routing/routes.dart';
+import 'package:omnifinder/widgets/keyword_tile.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -8,6 +12,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   TextEditingController _textController = TextEditingController();
+  GlobalKey<AnimatedListState> _animatedListKey =
+      GlobalKey<AnimatedListState>();
+  List<String> keywords = [];
 
   @override
   void dispose() {
@@ -20,12 +27,57 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
   }
 
-  void _submitForm(String value) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => CameraScreen(
-          keywords: [value],
+  void _startSearch() {
+    Navigator.of(context).pushNamed(
+      Routes.CAMERA,
+      arguments: RouteParameters(
+        routeArguments: CameraScreenRouteArguments(
+          keywordsContainer: KeywordsContainer(
+            keywords: keywords,
+          ),
         ),
+      ),
+    );
+  }
+
+  void _addKeyword() {
+    String value = "dummy";
+    keywords.insert(0, value);
+    _animatedListKey.currentState.insertItem(
+      0,
+    );
+  }
+
+  void _removeKeyword(int index) {
+    _animatedListKey.currentState.removeItem(
+      index,
+      (context, animation) {
+        Animation<double> fadeAnimation =
+            Tween<double>(begin: 1, end: 0).animate(animation);
+        return FadeTransition(
+          opacity: fadeAnimation,
+          child: KeywordTile(
+            keyword: keywords[index],
+          ),
+        );
+      },
+    );
+    keywords.removeAt(index);
+  }
+
+  Widget _buildItem(BuildContext context, int index, Animation animation) {
+    Animation<Offset> slideUpAnimation = Tween<Offset>(
+      begin: Offset.infinite,
+      end: Offset.zero,
+    ).animate(animation);
+    return SlideTransition(
+      position: slideUpAnimation,
+      child: Dismissible(
+        onDismissed: (_) => _removeKeyword(index),
+        child: KeywordTile(
+          keyword: keywords[index],
+        ),
+        key: Key(index.toString()),
       ),
     );
   }
@@ -35,44 +87,56 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       resizeToAvoidBottomPadding: false,
-      body: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+      appBar: AppBar(
+        title: Text("Omnifinder"),
+      ),
+      body: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: MediaQuery.of(context).size.width * 0.05,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Expanded(
-                  flex: 5,
-                  child: Container(
-                    alignment: Alignment.centerLeft,
-                    child: TextFormField(
-                        controller: _textController,
-                        decoration: InputDecoration(hintText: "Keyword"),
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: _submitForm),
-                  ),
+            Expanded(
+              flex: 1,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Please select the keywords you want to look up",
+                  style: Theme.of(context).textTheme.title,
                 ),
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      onPressed: () {
-                        _submitForm(_textController.text);
-                      },
-                      icon: Icon(
-                        Icons.send,
-                      ),
-                    ),
-                  ),
-                )
-              ],
+              ),
             ),
+            Expanded(
+              flex: 8,
+              child: AnimatedList(
+                key: _animatedListKey,
+                initialItemCount: keywords.length + 1,
+                physics: BouncingScrollPhysics(),
+                itemBuilder: (context, index, animation) {
+                  if (index == keywords.length) {
+                    return Container(
+                      height: 84,
+                      child: IconButton(
+                        icon: Icon(Icons.add),
+                        onPressed: _addKeyword,
+                      ),
+                    );
+                  } else {
+                    return _buildItem(context, index, animation);
+                  }
+                },
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: OutlineButton(
+                onPressed: _startSearch,
+                child: Text("Search"),
+              ),
+            )
           ],
         ),
       ),
