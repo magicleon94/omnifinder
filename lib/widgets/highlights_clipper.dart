@@ -19,12 +19,12 @@ class HighlightsClipper extends CustomClipper<Path> {
   }) {
     final double scaleX = widgetSize.width / imageSize.width;
     final double scaleY = widgetSize.height / imageSize.height;
-
+    double delta = 10;
     return Rect.fromLTRB(
-      rect.left.toDouble() * scaleX, //bigger!
-      rect.top.toDouble() * scaleY, //bigger!
-      rect.right.toDouble() * scaleX, //bigger!
-      rect.bottom.toDouble() * scaleY, //bigger!
+      rect.left.toDouble() * scaleX - delta, //bigger!
+      rect.top.toDouble() * scaleY - delta, //bigger!
+      rect.right.toDouble() * scaleX + delta, //bigger!
+      rect.bottom.toDouble() * scaleY + delta, //bigger!
     );
   }
 
