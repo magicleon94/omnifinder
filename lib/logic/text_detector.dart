@@ -3,8 +3,10 @@ import 'package:omnifinder/logic/camera_to_firevision_bridge.dart';
 
 class TextDetector with CameraToFireVisionBridge {
   final List<String> keywords;
+  final RegExp regExp;
 
-  TextDetector({this.keywords});
+  TextDetector({this.keywords})
+      : regExp = RegExp(keywords.join("|"), caseSensitive: false);
 
   Future<List<TextContainer>> findWords(
       FirebaseVisionImage firebaseVisionImage) async {
@@ -14,17 +16,15 @@ class TextDetector with CameraToFireVisionBridge {
     final VisionText visionText =
         await textRecognizer.processImage(firebaseVisionImage);
 
-    final String pattern = keywords.join("|");
-
-    final RegExp regExp = RegExp(pattern, caseSensitive: false);
-
     List<TextContainer> matches = List<TextContainer>();
 
-    for (TextBlock block in visionText.blocks) {
-      for (TextLine line in block.lines) {
-        for (TextElement element in line.elements) {
-          if (regExp.hasMatch(element.text)) {
-            matches.add(element);
+    for (int i = 0; i < visionText.blocks.length; i++) {
+      for (int j = 0; j < visionText.blocks[i].lines.length; j++) {
+        for (int k = 0;
+            k < visionText.blocks[i].lines[j].elements.length;
+            k++) {
+          if (regExp.hasMatch(visionText.blocks[i].lines[j].elements[k].text)) {
+            matches.add(visionText.blocks[i].lines[j].elements[k]);
           }
         }
       }

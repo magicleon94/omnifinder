@@ -2,15 +2,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:omnifinder/bloc/brain_bloc.dart';
 import 'package:omnifinder/providers/bloc_provider.dart';
+import 'package:omnifinder/routing/fade_route_builder.dart';
 import 'package:omnifinder/routing/route_arguments/camera_screen_route_arguments.dart';
 import 'package:omnifinder/routing/route_parameters.dart';
 import 'package:omnifinder/screens/camera_screen.dart';
 import 'package:omnifinder/screens/home_screen.dart';
+import 'package:omnifinder/screens/new_keyword_screen.dart';
 
 class Routes {
   static const String CAMERA = "camera";
   static const String SPLASH_SCREEN = "splash_screen";
   static const String HOME = "home";
+  static const String NEW_KEYWORD = "new_keyword";
 
   static Route onGenerateRoute(RouteSettings settings) {
     RouteParameters params = settings.arguments;
@@ -30,6 +33,11 @@ class Routes {
             child: CameraScreen(),
             bloc: _bloc,
           ),
+        );
+
+      case NEW_KEYWORD:
+        return FadeInRoute(
+          child: NewKeywordScreen(),
         );
       default:
         return null;

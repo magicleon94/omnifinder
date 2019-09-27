@@ -40,15 +40,20 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _addKeyword() {
-    String value = "dummy";
-    keywords.add(value);
-    _animatedListKey.currentState.insertItem(
-      keywords.length - 1,
-    );
+  void _addKeyword() async {
+    var value =
+        await Navigator.of(context).pushNamed(Routes.NEW_KEYWORD) as String;
+
+    if ((value?.trim()?.length ?? 0) > 0) {
+      keywords.add(value);
+      _animatedListKey.currentState.insertItem(
+        keywords.length - 1,
+      );
+    }
   }
 
   void _removeKeyword(int index) {
+    keywords.removeAt(index);
     _animatedListKey.currentState.removeItem(
       index,
       (context, animation) {
@@ -62,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
       begin: Offset(1, 0),
       end: Offset.zero,
     ).animate(animation);
+
     return SlideTransition(
       position: slideUpAnimation,
       child: Dismissible(
@@ -84,8 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: MediaQuery.of(context).size.width * 0.05,
-        ),
+            horizontal: MediaQuery.of(context).size.width * 0.05,
+            vertical: MediaQuery.of(context).size.height * 0.01),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.max,
@@ -110,10 +116,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemBuilder: (context, index, animation) {
                   if (index == keywords.length) {
                     return Container(
-                      height: 84,
-                      child: IconButton(
-                        icon: Icon(Icons.add),
+                      margin: EdgeInsets.symmetric(
+                        vertical: MediaQuery.of(context).size.height * 0.01,
+                      ),
+                      child: FloatingActionButton(
                         onPressed: _addKeyword,
+                        child: Icon(Icons.add),
+                        mini: true,
                       ),
                     );
                   } else {
@@ -125,8 +134,15 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               flex: 1,
               child: OutlineButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
                 onPressed: _startSearch,
-                child: Text("Search"),
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  alignment: Alignment.center,
+                  child: Text("Search"),
+                ),
               ),
             )
           ],

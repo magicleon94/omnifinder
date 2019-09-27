@@ -15,16 +15,14 @@ class BrainBloc extends BlocBase {
       _cameraImageStreamController.sink.add;
 
   StreamController<List<TextContainer>> _resultsStream =
-      StreamController<List<TextContainer>>();
+      StreamController<List<TextContainer>>.broadcast();
 
   Stream<List<TextContainer>> get detectionResultStream =>
       _resultsStream.stream;
 
   Future<void> _processImage(FirebaseVisionImage image) async {
     List<TextContainer> matchesFound = await _textDetector.findWords(image);
-    if (matchesFound.isNotEmpty) {
-      _resultsStream.sink.add(matchesFound);
-    }
+    _resultsStream.sink.add(matchesFound);
   }
 
   @override
