@@ -50,7 +50,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     ) as String;
-
     if (existingValue == null) {
       if ((value?.trim()?.length ?? 0) > 0) {
         keywords.add(value);
@@ -66,10 +65,11 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     }
+    _animatedListKey.currentState.reassemble();
   }
 
   void _removeKeyword(int index, {bool fromForm}) {
-    keywords.removeAt(index);
+    String removed = keywords.removeAt(index);
 
     _animatedListKey.currentState.removeItem(
       index,
@@ -77,21 +77,17 @@ class _HomeScreenState extends State<HomeScreen> {
         if (!(fromForm ?? false)) {
           return SizedBox.shrink();
         } else {
-          Animation<Offset> slideUpAnimation = Tween<Offset>(
-            begin: Offset.zero,
-            end: Offset(1, 0),
+          Animation<double> fadeAnimation = Tween<double>(
+            begin: 1,
+            end: 0,
           ).animate(animation);
 
-          return SlideTransition(
-            position: slideUpAnimation,
+          return FadeTransition(
+            opacity: fadeAnimation,
             child: Dismissible(
               onDismissed: (_) => _removeKeyword(index),
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => _addKeyword(keywords[index]),
-                child: KeywordTile(
-                  keyword: keywords[index],
-                ),
+              child: KeywordTile(
+                keyword: removed,
               ),
               key: Key(index.toString()),
             ),
@@ -102,18 +98,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildItem(BuildContext context, int index, Animation animation) {
-    Animation<Offset> slideUpAnimation = Tween<Offset>(
-      begin: Offset(1, 0),
-      end: Offset.zero,
+    Animation<double> fadeAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
     ).animate(animation);
 
-    return SlideTransition(
-      position: slideUpAnimation,
+    return FadeTransition(
+      opacity: fadeAnimation,
       child: Dismissible(
         onDismissed: (_) => _removeKeyword(index),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () => _addKeyword(keywords[index]),
+          onTap: () => _addKeyword(keywords[index], index),
           child: KeywordTile(
             keyword: keywords[index],
           ),
@@ -130,6 +126,12 @@ class _HomeScreenState extends State<HomeScreen> {
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         title: Text("Omnifinder"),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _startSearch,
+        child: Icon(
+          Icons.search,
+        ),
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(
@@ -151,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Expanded(
-              flex: 8,
+              flex: 9,
               child: AnimatedList(
                 key: _animatedListKey,
                 initialItemCount: keywords.length + 1,
@@ -174,20 +176,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            Expanded(
-              flex: 1,
-              child: OutlineButton(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                onPressed: _startSearch,
-                child: Container(
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  alignment: Alignment.center,
-                  child: Text("Search"),
-                ),
-              ),
-            )
           ],
         ),
       ),

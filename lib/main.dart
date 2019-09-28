@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:omnifinder/light_theme.dart';
 import 'package:omnifinder/routing/routes.dart';
 import 'package:omnifinder/screens/splash_screen.dart';
 
@@ -18,9 +19,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Quick finder!',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
+      theme: lightTheme,
       home: SplashScreen(),
       onGenerateRoute: Routes.onGenerateRoute,
     );
