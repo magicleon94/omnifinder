@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:omnifinder/models/keywords_container.dart';
 import 'package:omnifinder/routing/route_arguments/camera_screen_route_arguments.dart';
+import 'package:omnifinder/routing/route_arguments/keyword_input_route_arguments.dart';
 import 'package:omnifinder/routing/route_parameters.dart';
 import 'package:omnifinder/routing/routes.dart';
 import 'package:omnifinder/widgets/keyword_tile.dart';
@@ -40,40 +41,78 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _addKeyword() async {
-    var value =
-        await Navigator.of(context).pushNamed(Routes.NEW_KEYWORD) as String;
-
-    if ((value?.trim()?.length ?? 0) > 0) {
-      keywords.add(value);
-      _animatedListKey.currentState.insertItem(
-        keywords.length - 1,
-      );
+  void _addKeyword([String existingValue, int existingIndex]) async {
+    var value = await Navigator.of(context).pushNamed(
+      Routes.KEYWORD_INPUT,
+      arguments: RouteParameters(
+        routeArguments: KeywordInputRouteArguments(
+          initialValue: existingValue,
+        ),
+      ),
+    ) as String;
+    if (existingValue == null) {
+      if ((value?.trim()?.length ?? 0) > 0) {
+        keywords.add(value);
+        _animatedListKey.currentState.insertItem(
+          keywords.length - 1,
+        );
+      }
+    } else if (existingIndex != null) {
+      if ((value?.trim()?.length ?? 0) == 0) {
+        _removeKeyword(
+          existingIndex,
+          fromForm: true,
+        );
+      }
     }
+    _animatedListKey.currentState.reassemble();
   }
 
-  void _removeKeyword(int index) {
-    keywords.removeAt(index);
+  void _removeKeyword(int index, {bool fromForm}) {
+    String removed = keywords.removeAt(index);
+
     _animatedListKey.currentState.removeItem(
       index,
       (context, animation) {
-        return SizedBox.shrink();
+        if (!(fromForm ?? false)) {
+          return SizedBox.shrink();
+        } else {
+          Animation<double> fadeAnimation = Tween<double>(
+            begin: 1,
+            end: 0,
+          ).animate(animation);
+
+          return FadeTransition(
+            opacity: fadeAnimation,
+            child: Dismissible(
+              onDismissed: (_) => _removeKeyword(index),
+              child: KeywordTile(
+                keyword: removed,
+              ),
+              key: Key(index.toString()),
+            ),
+          );
+        }
       },
     );
   }
 
   Widget _buildItem(BuildContext context, int index, Animation animation) {
-    Animation<Offset> slideUpAnimation = Tween<Offset>(
-      begin: Offset(1, 0),
-      end: Offset.zero,
+    Animation<double> fadeAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
     ).animate(animation);
 
-    return SlideTransition(
-      position: slideUpAnimation,
+    return FadeTransition(
+      opacity: fadeAnimation,
       child: Dismissible(
         onDismissed: (_) => _removeKeyword(index),
-        child: KeywordTile(
-          keyword: keywords[index],
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => _addKeyword(keywords[index], index),
+          child: KeywordTile(
+            keyword: keywords[index],
+          ),
         ),
         key: Key(index.toString()),
       ),
@@ -87,6 +126,12 @@ class _HomeScreenState extends State<HomeScreen> {
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         title: Text("Omnifinder"),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _startSearch,
+        child: Icon(
+          Icons.search,
+        ),
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(
@@ -108,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Expanded(
-              flex: 8,
+              flex: 9,
               child: AnimatedList(
                 key: _animatedListKey,
                 initialItemCount: keywords.length + 1,
@@ -131,20 +176,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            Expanded(
-              flex: 1,
-              child: OutlineButton(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                onPressed: _startSearch,
-                child: Container(
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  alignment: Alignment.center,
-                  child: Text("Search"),
-                ),
-              ),
-            )
           ],
         ),
       ),

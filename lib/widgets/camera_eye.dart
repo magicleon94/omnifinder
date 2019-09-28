@@ -37,15 +37,17 @@ class _CameraEyeState extends State<CameraEye>
 
   Future<void> _initCamera() async {
     _cameras = await availableCameras();
-    _imageRotation = rotationIntToImageRotation(_cameras[0].sensorOrientation);
-    _controller = CameraController(
-        _cameras[0], _resolutionPresets[_currentResolutionIndex]);
+    if (_cameras.isNotEmpty) {
+      _imageRotation =
+          rotationIntToImageRotation(_cameras[0].sensorOrientation);
+      _controller = CameraController(
+          _cameras[0], _resolutionPresets[_currentResolutionIndex]);
 
-    await _controller.initialize();
-    _controller.startImageStream(_listenImage);
-
+      await _controller.initialize();
+      _controller.startImageStream(_listenImage);
+    }
     setState(() {
-      _cameraReady = _controller.value.isInitialized;
+      _cameraReady = _controller?.value?.isInitialized ?? false;
     });
   }
 
