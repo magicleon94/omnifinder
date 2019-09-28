@@ -7,10 +7,12 @@ class NewKeywordScreen extends StatefulWidget {
 
 class _NewKeywordScreenState extends State<NewKeywordScreen> {
   TextEditingController _textEditingController = TextEditingController();
+  FocusNode _focusNode = FocusNode();
 
   @override
   void dispose() {
     _textEditingController?.dispose();
+    _focusNode?.dispose();
     super.dispose();
   }
 
@@ -34,6 +36,7 @@ class _NewKeywordScreenState extends State<NewKeywordScreen> {
                   Expanded(
                     flex: 8,
                     child: TextField(
+                      autofocus: true,
                       controller: _textEditingController,
                       decoration: InputDecoration(
                         hintText: "Keyword",
