@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:omnifinder/models/keywords_container.dart';
 import 'package:omnifinder/routing/route_arguments/camera_screen_route_arguments.dart';
+import 'package:omnifinder/routing/route_arguments/keyword_input_route_arguments.dart';
 import 'package:omnifinder/routing/route_parameters.dart';
 import 'package:omnifinder/routing/routes.dart';
 import 'package:omnifinder/widgets/keyword_tile.dart';
@@ -40,24 +41,62 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _addKeyword() async {
-    var value =
-        await Navigator.of(context).pushNamed(Routes.NEW_KEYWORD) as String;
+  void _addKeyword([String existingValue, int existingIndex]) async {
+    var value = await Navigator.of(context).pushNamed(
+      Routes.KEYWORD_INPUT,
+      arguments: RouteParameters(
+        routeArguments: KeywordInputRouteArguments(
+          initialValue: existingValue,
+        ),
+      ),
+    ) as String;
 
-    if ((value?.trim()?.length ?? 0) > 0) {
-      keywords.add(value);
-      _animatedListKey.currentState.insertItem(
-        keywords.length - 1,
-      );
+    if (existingValue == null) {
+      if ((value?.trim()?.length ?? 0) > 0) {
+        keywords.add(value);
+        _animatedListKey.currentState.insertItem(
+          keywords.length - 1,
+        );
+      }
+    } else if (existingIndex != null) {
+      if ((value?.trim()?.length ?? 0) == 0) {
+        _removeKeyword(
+          existingIndex,
+          fromForm: true,
+        );
+      }
     }
   }
 
-  void _removeKeyword(int index) {
+  void _removeKeyword(int index, {bool fromForm}) {
     keywords.removeAt(index);
+
     _animatedListKey.currentState.removeItem(
       index,
       (context, animation) {
-        return SizedBox.shrink();
+        if (!(fromForm ?? false)) {
+          return SizedBox.shrink();
+        } else {
+          Animation<Offset> slideUpAnimation = Tween<Offset>(
+            begin: Offset.zero,
+            end: Offset(1, 0),
+          ).animate(animation);
+
+          return SlideTransition(
+            position: slideUpAnimation,
+            child: Dismissible(
+              onDismissed: (_) => _removeKeyword(index),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _addKeyword(keywords[index]),
+                child: KeywordTile(
+                  keyword: keywords[index],
+                ),
+              ),
+              key: Key(index.toString()),
+            ),
+          );
+        }
       },
     );
   }
@@ -72,8 +111,12 @@ class _HomeScreenState extends State<HomeScreen> {
       position: slideUpAnimation,
       child: Dismissible(
         onDismissed: (_) => _removeKeyword(index),
-        child: KeywordTile(
-          keyword: keywords[index],
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => _addKeyword(keywords[index]),
+          child: KeywordTile(
+            keyword: keywords[index],
+          ),
         ),
         key: Key(index.toString()),
       ),

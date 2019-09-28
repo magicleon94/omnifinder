@@ -4,16 +4,17 @@ import 'package:omnifinder/bloc/brain_bloc.dart';
 import 'package:omnifinder/providers/bloc_provider.dart';
 import 'package:omnifinder/routing/fade_route_builder.dart';
 import 'package:omnifinder/routing/route_arguments/camera_screen_route_arguments.dart';
+import 'package:omnifinder/routing/route_arguments/keyword_input_route_arguments.dart';
 import 'package:omnifinder/routing/route_parameters.dart';
 import 'package:omnifinder/screens/camera_screen.dart';
 import 'package:omnifinder/screens/home_screen.dart';
-import 'package:omnifinder/screens/new_keyword_screen.dart';
+import 'package:omnifinder/screens/keyword_input_screen.dart';
 
 class Routes {
   static const String CAMERA = "camera";
   static const String SPLASH_SCREEN = "splash_screen";
   static const String HOME = "home";
-  static const String NEW_KEYWORD = "new_keyword";
+  static const String KEYWORD_INPUT = "keyword_input";
 
   static Route onGenerateRoute(RouteSettings settings) {
     RouteParameters params = settings.arguments;
@@ -35,9 +36,12 @@ class Routes {
           ),
         );
 
-      case NEW_KEYWORD:
+      case KEYWORD_INPUT:
+        KeywordInputRouteArguments arguments = params.routeArguments;
         return FadeInRoute(
-          child: NewKeywordScreen(),
+          child: KeywordInputScreen(
+            initialValue: arguments.initialValue,
+          ),
         );
       default:
         return null;

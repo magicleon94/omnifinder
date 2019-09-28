@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
 
-class NewKeywordScreen extends StatefulWidget {
+class KeywordInputScreen extends StatefulWidget {
+  final String initialValue;
+
+  const KeywordInputScreen({
+    Key key,
+    this.initialValue,
+  }) : super(key: key);
+
   @override
-  _NewKeywordScreenState createState() => _NewKeywordScreenState();
+  _KeywordInputScreenState createState() => _KeywordInputScreenState();
 }
 
-class _NewKeywordScreenState extends State<NewKeywordScreen> {
-  TextEditingController _textEditingController = TextEditingController();
+class _KeywordInputScreenState extends State<KeywordInputScreen> {
+  TextEditingController _textEditingController;
+
+  @override
+  void initState() {
+    _textEditingController =
+        TextEditingController(text: widget.initialValue ?? "");
+    super.initState();
+  }
 
   @override
   void dispose() {
