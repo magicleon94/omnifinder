@@ -63,6 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
           existingIndex,
           fromForm: true,
         );
+      } else {
+        keywords[existingIndex] = value;
       }
     }
     _animatedListKey.currentState.reassemble();
