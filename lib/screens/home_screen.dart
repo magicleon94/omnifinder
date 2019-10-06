@@ -29,49 +29,72 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _startSearch() {
-    Navigator.of(context).pushNamed(
-      Routes.CAMERA,
-      arguments: RouteParameters(
-        routeArguments: CameraScreenRouteArguments(
-          keywordsContainer: KeywordsContainer(
-            keywords: keywords,
+    if (keywords.isNotEmpty) {
+      Navigator.of(context).pushNamed(
+        Routes.CAMERA,
+        arguments: RouteParameters(
+          routeArguments: CameraScreenRouteArguments(
+            keywordsContainer: KeywordsContainer(
+              keywords: keywords,
+            ),
           ),
         ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text("You have to add at least one keyword!"),
+        ),
+      );
+    }
+  }
+
+  void _showHistory() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text("Coming soon!"),
       ),
     );
   }
 
-  void _addKeyword([String existingValue, int existingIndex]) async {
-    var value = await Navigator.of(context).pushNamed(
+  void _editKeyword(int index) async {
+    String currentValue = keywords[index];
+    var newValue = await Navigator.of(context).pushNamed(
       Routes.KEYWORD_INPUT,
       arguments: RouteParameters(
         routeArguments: KeywordInputRouteArguments(
-          initialValue: existingValue,
+          initialValue: currentValue,
         ),
       ),
     ) as String;
-    if (existingValue == null) {
-      if ((value?.trim()?.length ?? 0) > 0) {
-        keywords.add(value);
-        _animatedListKey.currentState.insertItem(
-          keywords.length - 1,
-        );
-      }
-    } else if (existingIndex != null) {
-      if ((value?.trim()?.length ?? 0) == 0) {
-        _removeKeyword(
-          existingIndex,
-          fromForm: true,
-        );
-      } else {
-        keywords[existingIndex] = value;
-      }
+
+    if ((newValue?.trim()?.length ?? 0) == 0) {
+      _removeKeyword(
+        index,
+        fromForm: true,
+      );
+    } else {
+      keywords[index] = newValue;
     }
     _animatedListKey.currentState.reassemble();
   }
 
+  void _addKeyword() async {
+    var value = await Navigator.of(context).pushNamed(
+      Routes.KEYWORD_INPUT,
+    ) as String;
+    if ((value?.trim()?.length ?? 0) > 0) {
+      keywords.add(value);
+      _animatedListKey.currentState.insertItem(
+        keywords.length - 1,
+      );
+    }
+  }
+
   void _removeKeyword(int index, {bool fromForm}) {
-    String removed = keywords.removeAt(index);
+    keywords.removeAt(index);
 
     _animatedListKey.currentState.removeItem(
       index,
@@ -86,12 +109,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
           return FadeTransition(
             opacity: fadeAnimation,
-            child: Dismissible(
-              onDismissed: (_) => _removeKeyword(index),
-              child: KeywordTile(
-                keyword: removed,
-              ),
-              key: Key(index.toString()),
+            child: KeywordTile(
+              onEdit: () => _editKeyword(index),
+              onDelete: () => _removeKeyword(index),
+              index: index,
+              keyword: keywords[index],
             ),
           );
         }
@@ -107,16 +129,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return FadeTransition(
       opacity: fadeAnimation,
-      child: Dismissible(
-        onDismissed: (_) => _removeKeyword(index),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => _addKeyword(keywords[index], index),
-          child: KeywordTile(
-            keyword: keywords[index],
-          ),
-        ),
-        key: Key(index.toString()),
+      child: KeywordTile(
+        onEdit: () => _editKeyword(index),
+        onDelete: () => _removeKeyword(index),
+        index: index,
+        keyword: keywords[index],
       ),
     );
   }
@@ -129,57 +146,94 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text("Omnifinder"),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: _startSearch,
         child: Icon(
-          Icons.search,
+          Icons.camera,
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(
-            horizontal: MediaQuery.of(context).size.width * 0.05,
-            vertical: MediaQuery.of(context).size.height * 0.01),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              flex: 1,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          Expanded(
+            flex: 1,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.05,
+                vertical: MediaQuery.of(context).size.height * 0.01,
+              ),
               child: Align(
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.center,
                 child: Text(
-                  "Please select the keywords you want to look up",
+                  "What do you want to search?",
                   style: Theme.of(context).textTheme.title,
                 ),
               ),
             ),
-            Expanded(
-              flex: 9,
-              child: AnimatedList(
-                key: _animatedListKey,
-                initialItemCount: keywords.length + 1,
-                physics: BouncingScrollPhysics(),
-                itemBuilder: (context, index, animation) {
-                  if (index == keywords.length) {
-                    return Container(
-                      margin: EdgeInsets.symmetric(
-                        vertical: MediaQuery.of(context).size.height * 0.01,
-                      ),
-                      child: FloatingActionButton(
-                        onPressed: _addKeyword,
-                        child: Icon(Icons.add),
-                        mini: true,
-                      ),
-                    );
-                  } else {
-                    return _buildItem(context, index, animation);
-                  }
-                },
-              ),
+          ),
+          Expanded(
+            flex: 9,
+            child: AnimatedList(
+              key: _animatedListKey,
+              initialItemCount: keywords.length,
+              physics: BouncingScrollPhysics(),
+              itemBuilder: (context, index, animation) {
+                return _buildItem(context, index, animation);
+              },
             ),
-          ],
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Container(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              BottomItem(
+                icon: Icons.add,
+                text: "Add keyword",
+                onTap: _addKeyword,
+              ),
+              BottomItem(
+                icon: Icons.history,
+                text: "Recent keywords",
+                onTap: _showHistory,
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class BottomItem extends StatelessWidget {
+  final IconData icon;
+  final Function() onTap;
+  final String text;
+
+  const BottomItem({
+    Key key,
+    this.icon,
+    this.onTap,
+    this.text,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(icon),
+          if (text?.isNotEmpty ?? false) Text(text)
+        ],
       ),
     );
   }

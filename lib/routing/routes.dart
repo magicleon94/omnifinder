@@ -37,10 +37,10 @@ class Routes {
         );
 
       case KEYWORD_INPUT:
-        KeywordInputRouteArguments arguments = params.routeArguments;
+        KeywordInputRouteArguments arguments = params?.routeArguments;
         return FadeInRoute(
           child: KeywordInputScreen(
-            initialValue: arguments.initialValue,
+            initialValue: arguments?.initialValue,
           ),
         );
       default:
